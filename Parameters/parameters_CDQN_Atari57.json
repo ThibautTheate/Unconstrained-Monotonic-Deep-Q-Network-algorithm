@@ -1,0 +1,29 @@
+{
+    "gamma": 0.99,
+
+    "learningRate": 0.00005,
+    "epsilon": 0.0003125,
+    
+    "targetNetworkUpdate": 10000,
+    "learningUpdatePeriod": 4,
+
+    "capacity": 100000,
+    "batchSize": 32,
+
+    "epsilonStart": 1.0,
+    "epsilonEnd": 0.01,
+    "epsilonDecay": 1000000,
+    "epsilonTest": 0.001,
+
+    "structureDNN": [128],
+    "numberOfAtoms": 51,
+    "minReturn": -10,
+    "maxReturn": 10,
+
+    "rewardClipping": 1,
+    "gradientClipping": 1,
+
+    "atari": 1,
+    
+    "GPUNumber": 0
+}

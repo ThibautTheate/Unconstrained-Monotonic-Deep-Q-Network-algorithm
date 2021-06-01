@@ -1,0 +1,82 @@
+# coding=utf-8
+
+###############################################################################
+################################### Imports ###################################
+###############################################################################
+
+import numpy as np
+import torch
+import torch.nn as nn
+# pylint: disable=E1101
+# pylint: disable=E1102
+
+from Models.FeedforwardDNN import FeedForwardDNN
+from Models.CNN_Atari import CNN_Atari
+
+
+
+###############################################################################
+######################### Class IQN_Model_Atari ###############################
+###############################################################################
+
+class IQN_Model_Atari(nn.Module):
+    """
+    GOAL: Implementing the DL model for the IQN distributional RL algorithm.
+    
+    VARIABLES:  - network: Deep Neural Network.
+                                
+    METHODS:    - __init__: Initialization of the Deep Neural Network.
+                - forward: Forward pass of the Deep Neural Network.
+    """
+
+    def __init__(self, numberOfInputs, numberOfOutputs, NCos=64, device='cpu'):
+        """
+        GOAL: Defining and initializing the Deep Neural Network.
+        
+        INPUTS: - numberOfInputs: Number of inputs of the Deep Neural Network.
+                - numberOfOutputs: Number of outputs of the Deep Neural Network.
+                - Ncos: Number of elements in cosine function.
+        
+        OUTPUTS: /
+        """
+
+        # Call the constructor of the parent class (Pytorch torch.nn.Module)
+        super(IQN_Model_Atari, self).__init__()
+
+        # Initialization of useful variables
+        self.device = device
+        self.NCos = NCos
+        self.piMultiples = torch.tensor([np.pi*i for i in range(self.NCos)], dtype=torch.float).view(1, 1, self.NCos).to(self.device)
+    
+        # Initialization of the Deep Neural Network
+        self.stateEmbedding = CNN_Atari(numberOfInputs)
+        stateEmbedding = CNN_Atari(numberOfInputs).getOutputSize()
+        self.cosEmbedding = nn.Sequential(nn.Linear(NCos, stateEmbedding), nn.ReLU())
+        self.feedForwardDNN = FeedForwardDNN(stateEmbedding, numberOfOutputs, [512])
+
+    
+    def forward(self, x, N):
+        """
+        GOAL: Implementing the forward pass of the Deep Neural Network.
+        
+        INPUTS: - x: Input of the Deep Neural Network.
+                - N: Number of quantiles to generate.
+        
+        OUTPUTS: - y: Output of the Deep Neural Network.
+        """
+
+        # State embedding part of the Deep Neural Network
+        batchSize = x.size(0)
+        x = self.stateEmbedding(x).unsqueeze(1)
+
+        # Quantile embedding part of the Deep Neural Network
+        taus = torch.rand(batchSize, N).to(self.device).unsqueeze(2)
+        cos = torch.cos(taus*self.piMultiples).view(batchSize*N, self.NCos)
+        cos = self.cosEmbedding(cos).view(batchSize, N, -1)
+
+        # Multiplication of both state and cos embeddings outputs (combination)
+        x = (x * cos).view(batchSize, N, -1)
+
+        # Distribution part of the Deep Neural Network
+        x = self.feedForwardDNN(x)
+        return x.transpose(1, 2), taus
