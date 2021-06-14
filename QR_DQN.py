@@ -152,18 +152,15 @@ class QR_DQN(DQN):
 
             # If required, plot the return distribution associated with each action
             if plot:
-                fig = plt.figure(figsize=(20, 10))
+                fig = plt.figure()
                 ax = fig.add_subplot()
                 colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
-                tau = self.tau.view(-1, 1).repeat(1, 2).view(1, -1).cpu().numpy()
-                tau = np.insert(tau, 0, 0)[:-1]
-                quantiles = (quantiles.view(-1, 1).repeat(1, 2).view(self.actionSpace, -1)).cpu().numpy()
-                Qvalues = Qvalues.cpu().numpy()
+                tau = self.tau.cpu().numpy()
+                quantiles = quantiles.cpu().numpy()
                 for a in range(self.actionSpace):
-                    ax.plot(quantiles[a], tau, linestyle='-', label=''.join(['Action ', str(a)]), color=colors[a])
-                    ax.axvline(x=Qvalues[a], linewidth=2, linestyle='--', label=''.join(['Action ', str(a), ' expected return']), color=colors[a])
-                ax.set_xlabel('Return')
-                ax.set_ylabel('Probability')
+                    ax.plot(tau, quantiles[a], linestyle='-', label=''.join(['Action ', str(a)]), color=colors[a])
+                ax.set_xlabel('Quantile fraction')
+                ax.set_ylabel('QF')
                 ax.legend()
                 plt.show()
             

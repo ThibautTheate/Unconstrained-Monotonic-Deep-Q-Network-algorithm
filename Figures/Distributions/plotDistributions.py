@@ -27,13 +27,12 @@ alpha = 0.75
 lw=2
 
 # Loading of the data from csv files
-FolderName = 'DistributionsVisualization/'
-MonteCarloPDF = pd.read_csv('DistributionsVisualization/MonteCarloPDF.csv')
-MonteCarloCDF = pd.read_csv('DistributionsVisualization/MonteCarloCDF.csv')
-MonteCarloQF = pd.read_csv('DistributionsVisualization/MonteCarloQF.csv')
-LearntPDF = pd.read_csv('DistributionsVisualization/UMDQN_KL.csv')
-LearntCDF = pd.read_csv('DistributionsVisualization/UMDQN_C.csv')
-LearntQF = pd.read_csv('DistributionsVisualization/UMDQN_W.csv')
+MonteCarloPDF = pd.read_csv('MonteCarloPDF.csv')
+MonteCarloCDF = pd.read_csv('MonteCarloCDF.csv')
+MonteCarloQF = pd.read_csv('MonteCarloQF.csv')
+LearntPDF = pd.read_csv('UMDQN_KL.csv')
+LearntCDF = pd.read_csv('UMDQN_C.csv')
+LearntQF = pd.read_csv('UMDQN_W.csv')
 
 # Plotting of the distributions (PDF, CDF and QF)
 # PDF

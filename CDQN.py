@@ -154,17 +154,14 @@ class CDQN(DQN):
 
             # If required, plot the return distribution associated with each action
             if plot:
-                expectedReturns = expectedReturns.cpu().numpy()
                 colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
-                fig = plt.figure(figsize=(20, 10))
+                fig = plt.figure()
                 ax = fig.add_subplot()
                 for actionNumber in range(self.actionSpace):
                     dist = distribution[actionNumber].cpu().numpy()
-                    expectedReturn = expectedReturns[actionNumber]
                     ax.bar(self.support, dist, label=''.join(['Action ', str(actionNumber)]), width=(self.maxReturn-self.minReturn)/self.numberOfAtoms, edgecolor='black', alpha=0.5, color=colors[actionNumber])
-                    ax.axvline(x=expectedReturn, linewidth=2, linestyle='--', label=''.join(['Action ', str(actionNumber), ' expected return']), color=colors[actionNumber])
-                ax.set_xlabel('Return')
-                ax.set_ylabel('Probability')
+                ax.set_xlabel('Random return')
+                ax.set_ylabel('PDF')
                 ax.legend()
                 plt.show()
             
