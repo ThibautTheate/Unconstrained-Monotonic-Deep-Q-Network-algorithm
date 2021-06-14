@@ -1,7 +1,7 @@
 # Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks
 Official implementation of the UMDQN algorithm presented in the scientific research paper:
 > Thibaut Théate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst. "Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks." (2021).
-> [[arxiv]](https://arxiv.org/abs/)
+> [[arxiv]](https://arxiv.org/abs/2106.03228)
 
 
 
@@ -19,7 +19,7 @@ The dependencies are listed in the text file "requirements.txt":
 * Pandas
 * Matplotlib
 * Scipy
-* TQDM
+* Tqdm
 
 
 
@@ -49,9 +49,11 @@ For more advanced tests and manipulations, please directly refer to the code.
 If you make use of this experimental code, please cite the associated research paper:
 
 ```
-@inproceedings{Theate2021,
-  title={Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks},
-  author={Thibaut Theate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst},
-  year={2021}
+@article{Theate2021,
+  title   = {Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks},
+  author  = {Thibaut Th{\'{e}}ate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst},
+  journal = {CoRR},
+  volume  = {abs/2106.03228},
+  year    = {2021}
 }
 ```
