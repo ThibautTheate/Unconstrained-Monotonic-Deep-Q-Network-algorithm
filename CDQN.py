@@ -11,12 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-# pylint: disable=E1101
-# pylint: disable=E1102
 
 from replayMemory import ReplayMemory
 
@@ -92,7 +87,7 @@ class CDQN(DQN):
         self.gamma = parameters['gamma']
         self.learningRate = parameters['learningRate']
         self.epsilon = parameters['epsilon']
-        self.targetNetworkUpdate = parameters['targetNetworkUpdate']
+        self.targetUpdatePeriod = parameters['targetUpdatePeriod']
         self.learningUpdatePeriod = parameters['learningUpdatePeriod']
         self.rewardClipping = parameters['rewardClipping']
         self.gradientClipping = parameters['gradientClipping']
@@ -111,9 +106,10 @@ class CDQN(DQN):
 
         # Set the two Deep Neural Networks of the RL algorithm (policy and target)
         self.atari = parameters['atari']
-        if self.atari:
-            self.policyNetwork = CDQN_Model_Atari(observationSpace, actionSpace*self.numberOfAtoms, self.numberOfAtoms).to(self.device)
-            self.targetNetwork = CDQN_Model_Atari(observationSpace, actionSpace*self.numberOfAtoms, self.numberOfAtoms).to(self.device)
+        self.minatar = parameters['minatar']
+        if self.atari or self.minatar:
+            self.policyNetwork = CDQN_Model_Atari(observationSpace, actionSpace*self.numberOfAtoms, self.numberOfAtoms, minAtar=self.minatar).to(self.device)
+            self.targetNetwork = CDQN_Model_Atari(observationSpace, actionSpace*self.numberOfAtoms, self.numberOfAtoms, minAtar=self.minatar).to(self.device)
         else:
             self.policyNetwork = CDQN_Model(observationSpace, actionSpace*self.numberOfAtoms, parameters['structureDNN'], self.numberOfAtoms).to(self.device)
             self.targetNetwork = CDQN_Model(observationSpace, actionSpace*self.numberOfAtoms, parameters['structureDNN'], self.numberOfAtoms).to(self.device)
@@ -149,19 +145,21 @@ class CDQN(DQN):
             state = torch.from_numpy(state).float().to(self.device).unsqueeze(0)
             distribution = self.policyNetwork(state).squeeze(0)
             distributionReturn = distribution * self.supportTorch
-            expectedReturns = distributionReturn.sum(1)
-            _, action = expectedReturns.max(0)
+            QValues = distributionReturn.sum(1)
+            _, action = QValues.max(0)
 
             # If required, plot the return distribution associated with each action
             if plot:
                 colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
                 fig = plt.figure()
                 ax = fig.add_subplot()
-                for actionNumber in range(self.actionSpace):
-                    dist = distribution[actionNumber].cpu().numpy()
-                    ax.bar(self.support, dist, label=''.join(['Action ', str(actionNumber)]), width=(self.maxReturn-self.minReturn)/self.numberOfAtoms, edgecolor='black', alpha=0.5, color=colors[actionNumber])
+                QValues = QValues.cpu().numpy()
+                for a in range(self.actionSpace):
+                    dist = distribution[a].cpu().numpy()
+                    ax.bar(self.support, dist, label=''.join(['Action ', str(a), ' random return Z']), width=(self.maxReturn-self.minReturn)/self.numberOfAtoms, edgecolor='black', alpha=0.5, color=colors[a])
+                    ax.axvline(x=QValues[a], linewidth=2, linestyle='--', label=''.join(['Action ', str(a), ' expected return Q']), color=colors[a])
                 ax.set_xlabel('Random return')
-                ax.set_ylabel('PDF')
+                ax.set_ylabel('Probability Density Function (PDF)')
                 ax.legend()
                 plt.show()
             

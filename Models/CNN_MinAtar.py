@@ -12,13 +12,13 @@ import torch.nn as nn
 
 
 ###############################################################################
-############################## Class CNN_Atari ################################
+############################# Class CNN_MinAtar ###############################
 ###############################################################################
 
-class CNN_Atari(nn.Module):
+class CNN_MinAtar(nn.Module):
     """
     GOAL: Implementing the CNN part of the DNN designed for the DQN algorithm
-          to successfully play Atari games.
+          to successfully play Atari games (MinAtar version).
     
     VARIABLES:  - network: Convolutional Neural Network.
                                 
@@ -36,15 +36,18 @@ class CNN_Atari(nn.Module):
         """
 
         # Call the constructor of the parent class (Pytorch torch.nn.Module)
-        super(CNN_Atari, self).__init__()
+        super(CNN_MinAtar, self).__init__()
+
+        # Initialization of some variables
+        self.channels = numberOfInputs
+        self.size = 10
+        self.filters = 16
+        self.kernel = 3
+        self.stride = 1
 
         # Initialization of the Convolutional Neural Network
         self.network = nn.Sequential(
-            nn.Conv2d(numberOfInputs, 32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.Conv2d(self.channels, self.filters, self.kernel, self.stride),
             nn.ReLU()
         )
 
@@ -58,7 +61,8 @@ class CNN_Atari(nn.Module):
         OUTPUTS: - size: Size of the Convolutional Neural Network. output.
         """
 
-        return self.network(torch.zeros(1, *(4, 84, 84))).view(1, -1).size(1)
+        newSize = ((self.size - self.kernel)/self.stride) + 1
+        return int(newSize * newSize * self.filters)
 
     
     def forward(self, x):
@@ -69,6 +73,6 @@ class CNN_Atari(nn.Module):
         
         OUTPUTS: - y: Output of the Convolutional Neural Network.
         """
-
+        
         x = self.network(x)
         return x.view(x.size(0), -1)

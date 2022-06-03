@@ -9,6 +9,7 @@ import torch.nn as nn
 # pylint: disable=E1102
 
 from Models.DNN_Atari import DNN_Atari
+from Models.DNN_MinAtar import DNN_MinAtar
 
 
 
@@ -26,13 +27,14 @@ class QR_DQN_Model_Atari(nn.Module):
                 - forward: Forward pass of the Deep Neural Network.
     """
 
-    def __init__(self, numberOfInputs, numberOfOutputs, numberOfQuantiles=200):
+    def __init__(self, numberOfInputs, numberOfOutputs, numberOfQuantiles=200, minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
         INPUTS: - numberOfInputs: Number of inputs of the Deep Neural Network.
                 - numberOfOutputs: Number of outputs of the Deep Neural Network.
                 - numberOfQuantiles: Number of quantiles for approximating the distribution.
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -45,7 +47,10 @@ class QR_DQN_Model_Atari(nn.Module):
         self.numberOfActions = int(numberOfOutputs/numberOfQuantiles)
     
         # Initialization of the Deep Neural Network.
-        self.network = DNN_Atari(numberOfInputs, numberOfOutputs)
+        if minAtar:
+            self.network = DNN_MinAtar(numberOfInputs, numberOfOutputs)
+        else:
+            self.network = DNN_Atari(numberOfInputs, numberOfOutputs)
 
     
     def forward(self, x):

@@ -16,6 +16,7 @@ umnn
 gym
 atari-py
 opencv-python
+minatar
 
 # Extra packages
 tqdm

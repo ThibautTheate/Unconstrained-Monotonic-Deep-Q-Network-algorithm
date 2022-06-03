@@ -4,7 +4,7 @@
     "learningRate": 0.00005,
     "epsilon": 0.0003125,
     
-    "targetNetworkUpdate": 10000,
+    "targetUpdatePeriod": 10000,
     "learningUpdatePeriod": 4,
 
     "capacity": 100000,
@@ -17,13 +17,14 @@
 
     "structureDNN": [128],
     "numberOfAtoms": 51,
-    "minReturn": -10,
-    "maxReturn": 10,
+    "minReturn": -5,
+    "maxReturn": 5,
 
     "rewardClipping": 1,
     "gradientClipping": 1,
 
     "atari": 1,
+    "minatar": 0,
     
     "GPUNumber": 0
 }

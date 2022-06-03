@@ -10,6 +10,7 @@ import torch.nn as nn
 # pylint: disable=E1102
 
 from Models.DNN_Atari import DNN_Atari
+from Models.DNN_MinAtar import DNN_MinAtar
 from Models.MonotonicNN import MonotonicNN
 
 
@@ -31,7 +32,7 @@ class UMDQN_W_Model_Atari(nn.Module):
 
     def __init__(self, numberOfInputs, numberOfOutputs,
                  structureUMNN, stateEmbedding,
-                 numberOfSteps, device='cpu'):
+                 numberOfSteps, device='cpu', minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
@@ -41,6 +42,7 @@ class UMDQN_W_Model_Atari(nn.Module):
                 - stateEmbedding: Dimension of the state embedding.
                 - numberOfSteps: Number of integration steps for the UMNN.
                 - device: Hardware device (CPU or GPU).
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -49,7 +51,10 @@ class UMDQN_W_Model_Atari(nn.Module):
         super(UMDQN_W_Model_Atari, self).__init__()
 
         # Initialization of the Deep Neural Network
-        self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
+        if minAtar:
+            self.stateEmbeddingDNN = DNN_MinAtar(numberOfInputs, stateEmbedding)
+        else:
+            self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
         self.UMNN = MonotonicNN(stateEmbedding+1, structureUMNN, numberOfSteps, numberOfOutputs, device)
 
     

@@ -12,6 +12,7 @@ import torch.nn as nn
 
 from Models.FeedforwardDNN import FeedForwardDNN
 from Models.CNN_Atari import CNN_Atari
+from Models.CNN_MinAtar import CNN_MinAtar
 
 
 
@@ -30,13 +31,15 @@ class FQF_Model_Atari(nn.Module):
                 - forward: Forward pass of the Deep Neural Network.
     """
 
-    def __init__(self, numberOfInputs, numberOfOutputs, NCos=64, device='cpu'):
+    def __init__(self, numberOfInputs, numberOfOutputs, NCos=64, device='cpu',
+                 minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
         INPUTS: - numberOfInputs: Number of inputs of the Deep Neural Network.
                 - numberOfOutputs: Number of outputs of the Deep Neural Network.
                 - Ncos: Number of elements in cosine function.
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -50,10 +53,16 @@ class FQF_Model_Atari(nn.Module):
         self.piMultiples = torch.tensor([np.pi*i for i in range(self.NCos)], dtype=torch.float).view(1, 1, self.NCos).to(self.device)
     
         # Initialization of the Deep Neural Network.
-        self.stateEmbedding = CNN_Atari(numberOfInputs)
-        self.stateEmbeddingSize = CNN_Atari(numberOfInputs).getOutputSize()
-        self.cosEmbedding = nn.Sequential(nn.Linear(NCos, self.stateEmbeddingSize), nn.ReLU())
-        self.feedForwardDNN = FeedForwardDNN(self.stateEmbeddingSize, numberOfOutputs, [512])
+        if minAtar:
+            self.stateEmbedding = CNN_MinAtar(numberOfInputs)
+            self.stateEmbeddingSize = CNN_MinAtar(numberOfInputs).getOutputSize()
+            self.cosEmbedding = nn.Sequential(nn.Linear(NCos, self.stateEmbeddingSize), nn.ReLU())
+            self.feedForwardDNN = FeedForwardDNN(self.stateEmbeddingSize, numberOfOutputs, [128])
+        else:
+            self.stateEmbedding = CNN_Atari(numberOfInputs)
+            self.stateEmbeddingSize = CNN_Atari(numberOfInputs).getOutputSize()
+            self.cosEmbedding = nn.Sequential(nn.Linear(NCos, self.stateEmbeddingSize), nn.ReLU())
+            self.feedForwardDNN = FeedForwardDNN(self.stateEmbeddingSize, numberOfOutputs, [512])
 
     
     def embedding(self, x):

@@ -10,6 +10,7 @@ import torch.nn as nn
 # pylint: disable=E1102
 
 from Models.DNN_Atari import DNN_Atari
+from Models.DNN_MinAtar import DNN_MinAtar
 from Models.MonotonicNN import MonotonicNN
 
 
@@ -24,17 +25,16 @@ class UMDQN_C_Model_Atari(nn.Module):
     
     VARIABLES:  - stateEmbeddingDNN: State embedding part of the Deep Neural Network.
                 - UMNN: UMNN part of the Deep Neural Network.
-                - getDerivative: Get the derivative internally computed by the UMNN.
-                - getExpectation: Get the expectation of the PDF internally computed by the UMNN.
-                - quantileToValue: Get the return value associated to a certain quantile (inverse CDF).
                                 
     METHODS:    - __init__: Initialization of the Deep Neural Network.
                 - forward: Forward pass of the Deep Neural Network.
+                - getDerivative: Get the derivative internally computed by the UMNN.
+                - getExpectation: Get the expectation of the PDF internally computed by the UMNN.
     """
 
     def __init__(self, numberOfInputs, numberOfOutputs,
                  structureUMNN, stateEmbedding, numberOfSteps,
-                 device='cpu'):
+                 device='cpu', minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
@@ -44,6 +44,7 @@ class UMDQN_C_Model_Atari(nn.Module):
                 - stateEmbedding: Dimension of the state embedding.
                 - numberOfSteps: Number of integration steps for the UMNN.
                 - device: Hardware device (CPU or GPU).
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -52,7 +53,10 @@ class UMDQN_C_Model_Atari(nn.Module):
         super(UMDQN_C_Model_Atari, self).__init__()
 
         # Initialization of the Deep Neural Network
-        self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
+        if minAtar:
+            self.stateEmbeddingDNN = DNN_MinAtar(numberOfInputs, stateEmbedding)
+        else:
+            self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
         self.UMNN = MonotonicNN(stateEmbedding+1, structureUMNN, numberOfSteps, numberOfOutputs, device)
 
     
@@ -123,27 +127,3 @@ class UMDQN_C_Model_Atari(nn.Module):
         expectation = self.UMNN.expectation(state, lambda x: x, lambda x: torch.sigmoid(x)*(1-torch.sigmoid(x)), minReturn, maxReturn, numberOfPoints)
         return expectation
 
-
-    def quantileToValue(self, state, quantile, minValue, maxValue, numberOfSteps):
-        """
-        GOAL: Get the return value associated to a certain quantile (inverse CDF).
-        
-        INPUTS: - state: RL state.
-                - quantile: Quantile values (between 0 and 1).
-                - minValue: Minimum value for the return.
-                - maxValue: Maximum value for the return.
-                - numberOfSteps: Number of steps for the search (accuracy).
-        
-        OUTPUTS: - value: Return values.
-        """
-        
-        # Correction fof the sigmoid
-        quantile = torch.log(quantile/(1-quantile))
-
-        # State embedding part of the Deep Neural Network
-        x = self.stateEmbeddingDNN(state)
-        x = x.repeat(1, int(len(quantile)/len(state))).view(-1, x.size(1))
-
-        # Coomputation of the return values thanks to the inverse CDF
-        value = self.UMNN.inverse(quantile, x, minValue, maxValue, numberOfSteps)
-        return value

@@ -1,7 +1,7 @@
 {
-    "gamma": 0.5,
-    "learningRate": 0.0001,
+    "gamma": 0.99,
 
+    "learningRate": 0.0001,
     "epsilon": 0.00001,
     
     "targetUpdatePeriod": 1000,
@@ -15,9 +15,14 @@
     "epsilonDecay": 10000,
     "epsilonTest": 0.001,
 
-    "structureDNN": [128, 128],
+    "structureDNN": [128],
+    "structureUMNN": [128],
+    "stateEmbedding": 128,
+    "numberOfSteps": 50,
 
-    "rewardClipping": 2,
+    "numberOfSamples": 200,
+
+    "rewardClipping": 1000,
     "gradientClipping": 1,
 
     "atari": 0,

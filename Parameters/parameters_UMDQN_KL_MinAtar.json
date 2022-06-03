@@ -17,16 +17,20 @@
 
     "structureDNN": [128],
     "structureUMNN": [128],
-    "stateEmbedding": 512,
+    "stateEmbedding": 128,
     "numberOfSteps": 50,
 
     "numberOfSamples": 200,
+    "minReturn": -1,
+    "maxReturn": 10,
+
+    "fasterExpectation": 1,
 
     "rewardClipping": 1,
     "gradientClipping": 1,
 
-    "atari": 1,
-    "minatar": 0,
+    "atari": 0,
+    "minatar": 1,
     
     "GPUNumber": 0
 }

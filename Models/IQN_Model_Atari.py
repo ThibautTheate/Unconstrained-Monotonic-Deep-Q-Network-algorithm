@@ -12,6 +12,7 @@ import torch.nn as nn
 
 from Models.FeedforwardDNN import FeedForwardDNN
 from Models.CNN_Atari import CNN_Atari
+from Models.CNN_MinAtar import CNN_MinAtar
 
 
 
@@ -29,13 +30,15 @@ class IQN_Model_Atari(nn.Module):
                 - forward: Forward pass of the Deep Neural Network.
     """
 
-    def __init__(self, numberOfInputs, numberOfOutputs, NCos=64, device='cpu'):
+    def __init__(self, numberOfInputs, numberOfOutputs, NCos=64, device='cpu',
+                 minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
         INPUTS: - numberOfInputs: Number of inputs of the Deep Neural Network.
                 - numberOfOutputs: Number of outputs of the Deep Neural Network.
                 - Ncos: Number of elements in cosine function.
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -49,18 +52,26 @@ class IQN_Model_Atari(nn.Module):
         self.piMultiples = torch.tensor([np.pi*i for i in range(self.NCos)], dtype=torch.float).view(1, 1, self.NCos).to(self.device)
     
         # Initialization of the Deep Neural Network
-        self.stateEmbedding = CNN_Atari(numberOfInputs)
-        stateEmbedding = CNN_Atari(numberOfInputs).getOutputSize()
-        self.cosEmbedding = nn.Sequential(nn.Linear(NCos, stateEmbedding), nn.ReLU())
-        self.feedForwardDNN = FeedForwardDNN(stateEmbedding, numberOfOutputs, [512])
+        if minAtar:
+            self.stateEmbedding = CNN_MinAtar(numberOfInputs)
+            stateEmbedding = CNN_MinAtar(numberOfInputs).getOutputSize()
+            self.cosEmbedding = nn.Sequential(nn.Linear(NCos, stateEmbedding), nn.ReLU())
+            self.feedForwardDNN = FeedForwardDNN(stateEmbedding, numberOfOutputs, [128])
+        else:
+            self.stateEmbedding = CNN_Atari(numberOfInputs)
+            stateEmbedding = CNN_Atari(numberOfInputs).getOutputSize()
+            self.cosEmbedding = nn.Sequential(nn.Linear(NCos, stateEmbedding), nn.ReLU())
+            self.feedForwardDNN = FeedForwardDNN(stateEmbedding, numberOfOutputs, [512])
 
     
-    def forward(self, x, N):
+    def forward(self, x, N, randomSampling=True):
         """
         GOAL: Implementing the forward pass of the Deep Neural Network.
         
         INPUTS: - x: Input of the Deep Neural Network.
                 - N: Number of quantiles to generate.
+                - randomSampling: Boolean specifying whether the quantiles are
+                                  sampled randomly or not (default: True).
         
         OUTPUTS: - y: Output of the Deep Neural Network.
         """
@@ -69,8 +80,14 @@ class IQN_Model_Atari(nn.Module):
         batchSize = x.size(0)
         x = self.stateEmbedding(x).unsqueeze(1)
 
+        # Generate a number of quantiles (randomly or not)
+        if randomSampling:
+            taus = torch.rand(batchSize, N).to(self.device).unsqueeze(2)
+        else:
+            taus = torch.linspace(0.0, 1.0, N).to(self.device)
+            taus = taus.repeat(batchSize, 1).unsqueeze(2)
+
         # Quantile embedding part of the Deep Neural Network
-        taus = torch.rand(batchSize, N).to(self.device).unsqueeze(2)
         cos = torch.cos(taus*self.piMultiples).view(batchSize*N, self.NCos)
         cos = self.cosEmbedding(cos).view(batchSize, N, -1)
 

@@ -1,5 +1,5 @@
 {
-    "gamma": 0.5,
+    "gamma": 0.99,
     "learningRate": 0.0001,
 
     "epsilon": 0.00001,
@@ -17,7 +17,7 @@
 
     "structureDNN": [128, 128],
 
-    "rewardClipping": 2,
+    "rewardClipping": 1000,
     "gradientClipping": 1,
 
     "atari": 0,

@@ -1,13 +1,13 @@
 {
-    "gamma": 0.5,
+    "gamma": 0.99,
 
     "learningRate": 0.0001,
     "epsilon": 0.00001,
     
-    "targetNetworkUpdate": 1000,
+    "targetUpdatePeriod": 1000,
     "learningUpdatePeriod": 1,
 
-    "capacity": 10000, 
+    "capacity": 10000,
     "batchSize": 32,
 
     "epsilonStart": 1.0,
@@ -15,17 +15,22 @@
     "epsilonDecay": 10000,
     "epsilonTest": 0.001,
 
-    "structureDNN": [128, 128],
-    "structureStateEmbeddingDNN": [128],
-    "structureDistributionDNN": [128],
+    "structureDNN": [128],
+    "structureUMNN": [128],
     "stateEmbedding": 128,
+    "numberOfSteps": 50,
 
-    "numberOfQuantiles": 200,
+    "numberOfSamples": 200,
+    "minReturn": -10,
+    "maxReturn": 110,
 
-    "rewardClipping": 2,
+    "fasterExpectation": 1,
+
+    "rewardClipping": 1000,
     "gradientClipping": 1,
 
     "atari": 0,
+    "minatar": 0,
     
     "GPUNumber": 0
 }

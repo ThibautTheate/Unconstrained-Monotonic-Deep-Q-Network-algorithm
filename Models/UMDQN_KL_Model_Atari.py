@@ -10,6 +10,7 @@ import torch.nn as nn
 # pylint: disable=E1102
 
 from Models.DNN_Atari import DNN_Atari
+from Models.DNN_MinAtar import DNN_MinAtar
 from Models.MonotonicNN import OneDimensionnalNF
 
 
@@ -32,7 +33,7 @@ class UMDQN_KL_Model_Atari(nn.Module):
 
     def __init__(self, numberOfInputs, numberOfOutputs,
                  structureUMNN, stateEmbedding, numberOfSteps,
-                 device='cpu'):
+                 device='cpu', minAtar=False):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
@@ -42,6 +43,7 @@ class UMDQN_KL_Model_Atari(nn.Module):
                 - stateEmbedding: Dimension of the state embedding.
                 - numberOfSteps: Number of integration steps for the UMNN.
                 - device: Hardware device (CPU or GPU).
+                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
@@ -50,7 +52,10 @@ class UMDQN_KL_Model_Atari(nn.Module):
         super(UMDQN_KL_Model_Atari, self).__init__()
 
         # Initialization of the Deep Neural Network
-        self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
+        if minAtar:
+            self.stateEmbeddingDNN = DNN_MinAtar(numberOfInputs, stateEmbedding)
+        else:
+            self.stateEmbeddingDNN = DNN_Atari(numberOfInputs, stateEmbedding)
         self.UMNN = OneDimensionnalNF(stateEmbedding+1, structureUMNN, numberOfSteps, numberOfOutputs, device)
 
     
@@ -72,8 +77,12 @@ class UMDQN_KL_Model_Atari(nn.Module):
         # UMNN part of the Deep Neural Network
         x = self.UMNN(q, x)
 
-        # Return appropriate format
-        return torch.cat(torch.chunk(torch.transpose(x, 0, 1), batchSize, dim=1), 0)
+        # Formatting of the output and post processing operations
+        x = torch.cat(torch.chunk(torch.transpose(x, 0, 1), batchSize, dim=1), 0)
+        x = torch.exp(x)
+        x = x.clamp(min=1e-6)
+
+        return x
 
 
     def getExpectation(self, state, minReturn, maxReturn, numberOfPoints):

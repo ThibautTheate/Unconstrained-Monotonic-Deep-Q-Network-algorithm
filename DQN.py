@@ -18,12 +18,9 @@ from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-# pylint: disable=E1101
-# pylint: disable=E1102
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -31,6 +28,7 @@ from replayMemory import ReplayMemory
 
 from Models.FeedforwardDNN import FeedForwardDNN
 from Models.DNN_Atari import DNN_Atari
+from Models.DNN_MinAtar import DNN_MinAtar
 
 
 
@@ -118,7 +116,7 @@ class DQN:
         self.gamma = parameters['gamma']
         self.learningRate = parameters['learningRate']
         self.epsilon = parameters['epsilon']
-        self.targetNetworkUpdate = parameters['targetNetworkUpdate']
+        self.targetUpdatePeriod = parameters['targetUpdatePeriod']
         self.learningUpdatePeriod = parameters['learningUpdatePeriod']
         self.rewardClipping = parameters['rewardClipping']
         self.gradientClipping = parameters['gradientClipping']
@@ -134,9 +132,13 @@ class DQN:
 
         # Set the two Deep Neural Networks of the DQN algorithm (policy and target)
         self.atari = parameters['atari']
+        self.minatar = parameters['minatar']
         if self.atari:
             self.policyNetwork = DNN_Atari(observationSpace, actionSpace).to(self.device)
             self.targetNetwork = DNN_Atari(observationSpace, actionSpace).to(self.device)
+        elif self.minatar:
+            self.policyNetwork = DNN_MinAtar(observationSpace, actionSpace).to(self.device)
+            self.targetNetwork = DNN_MinAtar(observationSpace, actionSpace).to(self.device)
         else:
             self.policyNetwork = FeedForwardDNN(observationSpace, actionSpace, parameters['structureDNN']).to(self.device)
             self.targetNetwork = FeedForwardDNN(observationSpace, actionSpace, parameters['structureDNN']).to(self.device)
@@ -235,7 +237,7 @@ class DQN:
         """
 
         # Check if an update is required (update frequency)
-        if(self.steps % self.targetNetworkUpdate == 0):
+        if(self.steps % self.targetUpdatePeriod == 0):
             # Transfer the DNN parameters (policy network -> target network)
             self.targetNetwork.load_state_dict(self.policyNetwork.state_dict())
         
@@ -256,6 +258,20 @@ class DQN:
             state = torch.from_numpy(state).float().to(self.device).unsqueeze(0)
             QValues = self.policyNetwork(state).squeeze(0)
             _, action = QValues.max(0)
+
+            # If required, plot the expected return Q associated with each action
+            if plot:
+                colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
+                fig = plt.figure()
+                ax = fig.add_subplot()
+                QValues = QValues.cpu().numpy()
+                for a in range(self.actionSpace):
+                    ax.axvline(x=QValues[a], linewidth=5, label=''.join(['Action ', str(a), ' expected return Q']), color=colors[a])
+                ax.set_xlabel('Expected return Q')
+                ax.set_ylabel('')
+                ax.legend()
+                plt.show()
+
             return action.item()
 
     
@@ -344,12 +360,10 @@ class DQN:
             with torch.no_grad():
                 nextActions = torch.max(self.policyNetwork(nextState), 1)[1]
                 nextQValues = self.targetNetwork(nextState).gather(1, nextActions.unsqueeze(1)).squeeze(1)
-                #nextQValues = self.policyNetwork(nextState).gather(1, nextActions.unsqueeze(1)).squeeze(1) # Double DQN improvement
                 expectedQValues = reward + self.gamma * nextQValues * (1 - done)
 
             # Compute the loss (typically Huber or MSE loss)
             loss = F.smooth_l1_loss(currentQValues, expectedQValues)
-            #loss = F.mse_loss(currentQValues, expectedQValues)
 
             # Computation of the gradients
             self.optimizer.zero_grad()

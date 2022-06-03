@@ -4,7 +4,7 @@
     "learningRate": 0.0001,
     "epsilon": 0.00001,
     
-    "targetNetworkUpdate": 1000,
+    "targetUpdatePeriod": 1000,
     "learningUpdatePeriod": 1,
 
     "capacity": 10000,
@@ -20,20 +20,17 @@
     "stateEmbedding": 128,
     "numberOfSteps": 50,
 
-    "numberOfAtoms": 200,
+    "numberOfSamples": 200,
     "minReturn": -2,
     "maxReturn": 2,
 
-    "importanceSampling": 0,
-    "numberOfSamplesIS": 1000,
-
-    "fastExpectation": 1,
-    "numberOfPoints": 2000,
+    "fasterExpectation": 1,
 
     "rewardClipping": 2,
     "gradientClipping": 1,
 
     "atari": 0,
+    "minatar": 0,
     
     "GPUNumber": 0
 }

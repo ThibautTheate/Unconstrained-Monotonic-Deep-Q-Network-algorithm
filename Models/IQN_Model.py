@@ -55,12 +55,14 @@ class IQN_Model(nn.Module):
         self.feedForwardDNN = FeedForwardDNN(stateEmbedding, numberOfOutputs, [256])
 
     
-    def forward(self, x, N):
+    def forward(self, x, N, randomSampling=True):
         """
         GOAL: Implementing the forward pass of the Deep Neural Network.
         
         INPUTS: - x: Input of the Deep Neural Network.
                 - N: Number of quantiles to generate.
+                - randomSampling: Boolean specifying whether the quantiles are
+                                  sampled randomly or not (default: True).
         
         OUTPUTS: - y: Output of the Deep Neural Network.
         """
@@ -69,8 +71,14 @@ class IQN_Model(nn.Module):
         batchSize = x.size(0)
         x = self.stateEmbedding(x).unsqueeze(1)
 
+        # Generate a number of quantiles (randomly or not)
+        if randomSampling:
+            taus = torch.rand(batchSize, N).to(self.device).unsqueeze(2)
+        else:
+            taus = torch.linspace(0.0, 1.0, N).to(self.device)
+            taus = taus.repeat(batchSize, 1).unsqueeze(2)
+            
         # Quantile embedding part of the Deep Neural Network
-        taus = torch.rand(batchSize, N).to(self.device).unsqueeze(2)
         cos = torch.cos(taus*self.piMultiples).view(batchSize*N, self.NCos)
         cos = self.cosEmbedding(cos).view(batchSize, N, -1)
 

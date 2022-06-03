@@ -5,22 +5,22 @@
 ###############################################################################
 
 import torch.nn as nn
-import torch.nn.functional as F
 # pylint: disable=E1101
 # pylint: disable=E1102
 
-from Models.DNN_Atari import DNN_Atari
-from Models.DNN_MinAtar import DNN_MinAtar
+from Models.FeedforwardDNN import FeedForwardDNN
+from Models.CNN_MinAtar import CNN_MinAtar
 
 
 
 ###############################################################################
-############################ Class CDQN_Model_Atari ###########################
+############################# Class DNN_MinAtar ###############################
 ###############################################################################
 
-class CDQN_Model_Atari(nn.Module):
+class DNN_MinAtar(nn.Module):
     """
-    GOAL: Implementing the DL model for the CDQN distributional RL algorithm.
+    GOAL: Implementing the orignal DNN designed for the DQN algorithm to
+          succesfully play Atari games (MinAtar version).
     
     VARIABLES:  - network: Deep Neural Network.
                                 
@@ -28,30 +28,25 @@ class CDQN_Model_Atari(nn.Module):
                 - forward: Forward pass of the Deep Neural Network.
     """
 
-    def __init__(self, numberOfInputs, numberOfOutputs, numberOfAtoms, minAtar=False):
+    def __init__(self, numberOfInputs, numberOfOutputs):
         """
         GOAL: Defining and initializing the Deep Neural Network.
         
         INPUTS: - numberOfInputs: Number of inputs of the Deep Neural Network.
                 - numberOfOutputs: Number of outputs of the Deep Neural Network.
-                - numberOfAtoms: Number of atoms for the support (see C51 algorithm).
-                - minAtar: Boolean specifying whether the env is "MinAtar" or not.
         
         OUTPUTS: /
         """
 
         # Call the constructor of the parent class (Pytorch torch.nn.Module)
-        super(CDQN_Model_Atari, self).__init__()
+        super(DNN_MinAtar, self).__init__()
 
-        # Initialization of useful variables
-        self.numberOfAtoms = numberOfAtoms
-        self.numberOfActions = int(numberOfOutputs/numberOfAtoms)
-    
-        # Initialization of the Deep Neural Network
-        if minAtar:
-            self.network = DNN_MinAtar(numberOfInputs, numberOfOutputs)
-        else:
-            self.network = DNN_Atari(numberOfInputs, numberOfOutputs)
+        # Initialization of the Deep Neural Network.
+        CNNOutputSize = CNN_MinAtar(numberOfInputs).getOutputSize()
+        self.network = nn.Sequential(
+            CNN_MinAtar(numberOfInputs),
+            FeedForwardDNN(CNNOutputSize, numberOfOutputs, [128])
+        )
 
     
     def forward(self, x):
@@ -62,7 +57,5 @@ class CDQN_Model_Atari(nn.Module):
         
         OUTPUTS: - y: Output of the Deep Neural Network.
         """
-
-        x = self.network(x)
-        y = F.softmax(x.view(-1, self.numberOfActions, self.numberOfAtoms), dim=-1)
-        return y.clamp(min=1e-6)
+        
+        return self.network(x)

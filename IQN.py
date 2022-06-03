@@ -6,15 +6,13 @@
 
 import math
 
+import numpy as np
+import pandas as pd
+
 from matplotlib import pyplot as plt
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-# pylint: disable=E1101
-# pylint: disable=E1102
 
 from replayMemory import ReplayMemory
 
@@ -90,7 +88,7 @@ class IQN(DQN):
         self.gamma = parameters['gamma']
         self.learningRate = parameters['learningRate']
         self.epsilon = parameters['epsilon']
-        self.targetNetworkUpdate = parameters['targetNetworkUpdate']
+        self.targetUpdatePeriod = parameters['targetUpdatePeriod']
         self.learningUpdatePeriod = parameters['learningUpdatePeriod']
         self.rewardClipping = parameters['rewardClipping']
         self.gradientClipping = parameters['gradientClipping']
@@ -108,9 +106,10 @@ class IQN(DQN):
 
         # Set the two Deep Neural Networks of the RL algorithm (policy and target)
         self.atari = parameters['atari']
-        if self.atari:
-            self.policyNetwork = IQN_Model_Atari(observationSpace, actionSpace, self.NCos, self.device).to(self.device)
-            self.targetNetwork = IQN_Model_Atari(observationSpace, actionSpace, self.NCos, self.device).to(self.device)
+        self.minatar = parameters['minatar']
+        if self.atari or self.minatar:
+            self.policyNetwork = IQN_Model_Atari(observationSpace, actionSpace, self.NCos, self.device, minAtar=self.minatar).to(self.device)
+            self.targetNetwork = IQN_Model_Atari(observationSpace, actionSpace, self.NCos, self.device, minAtar=self.minatar).to(self.device)
         else:
             self.policyNetwork = IQN_Model(observationSpace, actionSpace, parameters['structureDNN'], parameters['stateEmbedding'], self.NCos, self.device).to(self.device)
             self.targetNetwork = IQN_Model(observationSpace, actionSpace, parameters['structureDNN'], parameters['stateEmbedding'], self.NCos, self.device).to(self.device)
@@ -145,10 +144,27 @@ class IQN(DQN):
         with torch.no_grad():
             state = torch.from_numpy(state).float().to(self.device).unsqueeze(0)
             quantiles, _ = self.policyNetwork(state, self.K)
-            Qvalues = quantiles.mean(2)
-            _, action = Qvalues.max(1)
+            QValues = quantiles.mean(2)
+            _, action = QValues.max(1)
+        
+            # If required, plot the return distribution associated with each action
+            if plot:
+                colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
+                fig = plt.figure()
+                ax = fig.add_subplot()
+                quantiles, taus = self.policyNetwork(state, 10000, False)
+                taus = taus[0].squeeze(1).cpu().numpy()
+                quantiles = quantiles.squeeze(0).cpu().numpy()
+                QValues = QValues.squeeze(0).cpu().numpy()
+                for a in range(self.actionSpace):
+                    ax.plot(taus, quantiles[a], linestyle='-', label=''.join(['Action ', str(a), ' random return Z']), color=colors[a])
+                    ax.axhline(y=QValues[a], linewidth=2, linestyle='--', label=''.join(['Action ', str(a), ' expected return Q']), color=colors[a])
+                ax.set_xlabel('Quantile fraction')
+                ax.set_ylabel('Quantile Function (QF)')
+                ax.legend()
+                plt.show()
             
-            return action.item()
+        return action.item()
 
 
     def learning(self):
@@ -190,6 +206,13 @@ class IQN(DQN):
             loss = torch.where(error <= self.kappa, 0.5 * error.pow(2), self.kappa * (error - (0.5 * self.kappa)))
             loss = (taus - (difference < 0).float()).abs() * loss/self.kappa
             loss = loss.mean(1).sum(1).mean()
+
+            # Without Huber loss (to be tested)
+            lossMSE = False
+            if lossMSE:
+                difference = targetQuantiles - quantiles
+                error = difference.pow(2)
+                loss = error.mean(1).sum()
 
             # Computation of the gradients
             self.optimizer.zero_grad()

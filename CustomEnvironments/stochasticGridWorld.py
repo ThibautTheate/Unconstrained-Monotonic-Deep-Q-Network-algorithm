@@ -118,9 +118,6 @@ class StochasticGridWorld(gym.Env):
             self.playerPosition = [x, y]
         self.timeElapsed = 0
 
-        # Set a custom fixed initial state for additional analyses (distribution visualization)
-        #self.playerPosition = [self.targetPosition[0]-1, self.targetPosition[1]]
-
         # Reset of the RL variables
         self.state = np.array([self.playerPosition[0], self.playerPosition[1]])
         self.reward = 0.
@@ -206,7 +203,7 @@ class StochasticGridWorld(gym.Env):
         OUTPUTS: /
         """
 
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(8, 8))
         ax = fig.gca()
         ax.set_xticks(np.arange(0, self.size+1, 1))
         ax.set_yticks(np.arange(0, self.size+1, 1))
@@ -218,7 +215,7 @@ class StochasticGridWorld(gym.Env):
         text = ''.join(['Time elapsed: ', str(self.timeElapsed)])
         plt.text(0, self.size+0.2, text, fontsize=12)
         plt.show()
-        #plt.savefig("StochasticGridWorldState.pdf", format="pdf")
+        #plt.savefig("Figures/Distributions/StochasticGridWorldState.pdf", format="pdf")
 
 
     def setState(self, state):
@@ -239,3 +236,4 @@ class StochasticGridWorld(gym.Env):
         self.state = np.array([self.playerPosition[0], self.playerPosition[1]])
 
         return self.state
+        

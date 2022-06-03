@@ -61,4 +61,4 @@ class CDQN_Model(nn.Module):
 
         x = self.network(x)
         y = F.softmax(x.view(-1, self.numberOfActions, self.numberOfAtoms), dim=-1)
-        return y.clamp(min=0.000001)
+        return y.clamp(min=1e-6)

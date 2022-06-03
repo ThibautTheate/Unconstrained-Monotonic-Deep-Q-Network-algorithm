@@ -130,10 +130,47 @@ class MonteCarloDistributions():
         for action in range(actions):
             samples.append(self.samplingMonteCarlo(state, action, numberOfSamples))
 
-        # Generation of the figures with the Monte Carlo distributions (PDF, CDF and QF)
+        # Initialization of the figure
         colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown']
+        fig = plt.figure()
+        
+        # Plotting of the PDF of the random return
+        ax1 = plt.subplot(3, 1, 1)
+        for action in range(actions):
+            plt.hist(samples[action], bins=bins, density=density, range=plotRange, histtype=histtype, color=colors[action])
+        ax1.set_xlabel('Random return')
+        ax1.set_ylabel('PDF')
+        ax1.set(xlim=(-2, 2))
+
+        # Plotting of the CDF of the random return
+        ax2 = plt.subplot(3, 1, 2)
+        for action in range(actions):
+            plt.hist(samples[action], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color=colors[action])
+        ax2.set_xlabel('Random return')
+        ax2.set_ylabel('CDF')
+        ax2.set(xlim=(-2, 2))
+
+        # Plotting of the QF of the random return
+        ax3 = plt.subplot(3, 1, 3)
+        CDF0 = plt.hist(samples[0], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')
+        CDF1 = plt.hist(samples[1], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')
+        CDF2 = plt.hist(samples[2], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')
+        CDF3 = plt.hist(samples[3], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')
+        ax3.clear()
+        ax3.plot(CDF0[0], CDF0[1][1:], color=colors[0])
+        ax3.plot(CDF1[0], CDF1[1][1:], color=colors[1])
+        ax3.plot(CDF2[0], CDF2[1][1:], color=colors[2])
+        ax3.plot(CDF3[0], CDF3[1][1:], color=colors[3])
+        ax3.set_xlabel('Quantile fraction')
+        ax3.set_ylabel('QF')
+        ax3.set(xlim=(0, 1))
+        ax3.legend(['Move right', 'Move down', 'Move left', 'Move up'])
+
+        # Saving of the figure generated
+        plt.savefig("Figures/Distributions/MonteCarloDistributions.pdf", format='pdf')
+
         # Generation of the figure for the PDF of the random return
-        fig = plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(10, 4))
         ax1 = plt.subplot(1, 1, 1)
         for action in range(actions):
             plt.hist(samples[action], bins=bins, density=density, range=plotRange, histtype=histtype, color=colors[action])
@@ -142,7 +179,7 @@ class MonteCarloDistributions():
         ax1.set(xlim=(-0.5, 1.5), ylim=(0, 3.5))
         plt.savefig("Figures/Distributions/MonteCarloDistributionsPDF.pdf", format='pdf')
         # Generation of the figure for the CDF of the random return
-        fig = plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(10, 4))
         ax2 = plt.subplot(1, 1, 1)
         for action in range(actions):
             plt.hist(samples[action], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color=colors[action])
@@ -151,7 +188,7 @@ class MonteCarloDistributions():
         ax2.set(xlim=(-0.5, 1.5), ylim=(-0.1, 1.1))
         plt.savefig("Figures/Distributions/MonteCarloDistributionsCDF.pdf", format='pdf')
         # Generation of the figure for the QF of the random return
-        fig = plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(10, 4))
         ax3 = plt.subplot(1, 1, 1)
         CDF0 = plt.hist(samples[0], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')
         CDF1 = plt.hist(samples[1], bins=bins, density=density, range=plotRange, histtype=histtype, cumulative=True, color='white')

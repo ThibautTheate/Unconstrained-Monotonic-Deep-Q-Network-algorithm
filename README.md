@@ -1,7 +1,7 @@
 # Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks
-Official implementation of the UMDQN algorithm presented in the scientific research paper:
+Experimental code supporting the results presented in the scientific research paper:
 > Thibaut Théate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst. "Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks." (2021).
-> [[arxiv]](https://arxiv.org/abs/2106.03228)
+> [[arxiv]](https://arxiv.org/abs/)
 
 
 
@@ -14,6 +14,7 @@ The dependencies are listed in the text file "requirements.txt":
 * Gym
 * Opencv-python
 * Atari-py
+* MinAtar
 * Umnn
 * Numpy
 * Pandas
@@ -35,10 +36,32 @@ with:
 * ALGORITHM being the name of the algorithm (by default UMDQN_C),
 * ENVIRONMENT being the name of the environment (by default StochasticGridWorld).
 
-The algorithms supported are DQN, CDQN, QR_DQN, IQN, FQF, UMDQN_KL, UMDQN_C and UMDQN_KL.
-The environments supported are "StochasticGridWorld", "PongNoFrameskip-v4", "BoxingNoFrameskip-v4" and "FreewayNoFrameskip-v4".
+The (distributional) RL algorithms supported are:
+* DQN,
+* CDQN,
+* QR_DQN,
+* IQN,
+* FQF,
+* UMDQN_KL,
+* UMDQN_C,
+* UMDQN_W.
 
-The number of episodes to be used for training the DRL algorithm may be specified by the user through the argument "-episodes". The parameters of the DRL algorithm can be set with the argument "-parameters" and by providing the name of the .json file containing these parameters.
+The benchmark environments supported are:
+* StochasticGridWorld,
+* CartPole-v0,
+* Acrobot-v1,
+* LunarLander-v2,
+* MountainCar-v0,
+* MinAtar/Asterix-v0,
+* MinAtar/Breakout-v0,
+* MinAtar/Freeway-v0,
+* MinAtar/Seaquest-v0,
+* MinAtar/SpaceInvaders-v0,
+* PongNoFrameskip-v4,
+* BoxingNoFrameskip-v4,
+* FreewayNoFrameskip-v4.
+
+The number of episodes for training the DRL algorithm may also be specified by the user through the argument "-episodes". The parameters of the DRL algorithms can be set with the argument "-parameters" and by providing the name of the .txt file containing these parameters within the "Parameters" folder.
 
 For more advanced tests and manipulations, please directly refer to the code.
 
@@ -49,11 +72,9 @@ For more advanced tests and manipulations, please directly refer to the code.
 If you make use of this experimental code, please cite the associated research paper:
 
 ```
-@article{Theate2021,
-  title   = {Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks},
-  author  = {Thibaut Th{\'{e}}ate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst},
-  journal = {CoRR},
-  volume  = {abs/2106.03228},
-  year    = {2021}
+@inproceedings{Théate2021,
+  title={Distributional Reinforcement Learning with Unconstrained Monotonic Neural Networks},
+  author={Thibaut Théate, Antoine Wehenkel, Adrien Bolland, Gilles Louppe and Damien Ernst},
+  year={2021}
 }
 ```

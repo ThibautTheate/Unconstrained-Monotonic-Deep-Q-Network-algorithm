@@ -564,14 +564,17 @@ class LazyFrames():
             self._frames = None
         return self._out
 
+
     def __array__(self, dtype=None):
         out = self._force()
         if dtype is not None:
             out = out.astype(dtype)
         return out
 
+
     def __len__(self):
         return len(self._force())
+        
 
     def __getitem__(self, i):
         return self._force()[i]
@@ -661,5 +664,36 @@ class AtariWrapper():
         env = FrameWrapper(env)
         env = NormalizationWrapper(env)
         env = StackingWrapper(env, numberOfFrames=numberOfFramesStacked)
+        env = PytorchWrapper(env)
+        return env
+
+
+
+###############################################################################
+############################ Class MinAtarWrapper #############################
+###############################################################################
+
+class MinAtarWrapper():
+    """
+    GOAL: Custom wrapper for the MinAtar environments (simplified Atari games).
+    
+    VARIABLES: /
+                         
+    METHODS: - wrapper: Wrap the MinAtar environment.
+    """
+
+    def wrapper(self, environment):
+        """
+        GOAL: Wrapping of the OpenAI gym {}NoFramekip-v4 environment.
+        
+        INPUTS: - environment: Name of the environment (MinAtar).
+        
+        OUTPUTS: env: Wrapped environment.
+        """
+
+        # Creation of the OpenAI gym environment.
+        env = gym.make(environment)
+
+        # Wrapping of the environment
         env = PytorchWrapper(env)
         return env

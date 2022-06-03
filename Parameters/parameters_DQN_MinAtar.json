@@ -2,8 +2,8 @@
     "gamma": 0.99,
 
     "learningRate": 0.00005,
-    "epsilon": 0.00001,
-    
+    "epsilon": 0.0003125,
+
     "targetUpdatePeriod": 10000,
     "learningUpdatePeriod": 4,
 
@@ -16,17 +16,12 @@
     "epsilonTest": 0.001,
 
     "structureDNN": [128],
-    "structureUMNN": [128],
-    "stateEmbedding": 512,
-    "numberOfSteps": 50,
-
-    "numberOfSamples": 200,
 
     "rewardClipping": 1,
     "gradientClipping": 1,
 
-    "atari": 1,
-    "minatar": 0,
+    "atari": 0,
+    "minatar": 1,
     
     "GPUNumber": 0
 }

@@ -2,9 +2,9 @@
     "gamma": 0.99,
 
     "learningRate": 0.00005,
-    "epsilon": 0.00001,
+    "epsilon": 0.0003125,
     
-    "targetNetworkUpdate": 10000,
+    "targetUpdatePeriod": 10000,
     "learningUpdatePeriod": 4,
 
     "capacity": 100000,
@@ -16,16 +16,13 @@
     "epsilonTest": 0.001,
 
     "structureDNN": [128],
-    "structureStateEmbeddingDNN": [128],
-    "structureDistributionDNN": [128],
-    "stateEmbedding": 512,
-
     "numberOfQuantiles": 200,
 
     "rewardClipping": 1,
     "gradientClipping": 1,
 
-    "atari": 1,
+    "atari": 0,
+    "minatar": 1,
     
     "GPUNumber": 0
 }

@@ -73,8 +73,12 @@ class UMDQN_KL_Model(nn.Module):
         # UMNN part of the Deep Neural Network
         x = self.UMNN(q, x)
 
-        # Return appropriate format
-        return torch.cat(torch.chunk(torch.transpose(x, 0, 1), batchSize, dim=1), 0)
+        # Formatting of the output and post processing operations
+        x = torch.cat(torch.chunk(torch.transpose(x, 0, 1), batchSize, dim=1), 0)
+        x = torch.exp(x)
+        x = x.clamp(min=1e-6)
+
+        return x
 
 
     def getExpectation(self, state, minReturn, maxReturn, numberOfPoints):
